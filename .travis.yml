@@ -1,0 +1,22 @@
+sudo: false
+
+language: go
+go:
+  - "1.13.x"
+  - "1.12.x"
+  - "1.11.x"
+  - "1.x"
+env:
+  - GO111MODULE=on
+
+before_install:
+  - go mod download
+  - go get -u golang.org/x/lint/golint
+
+script:
+  - golint ./...
+  - go vet ./...
+  - go test -covermode=count -coverprofile=profile.cov ./...
+
+notifications:
+  email: false
