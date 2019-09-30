@@ -1,4 +1,7 @@
 # go-clock
+[![Build Status](https://travis-ci.com/msales/go-clock.svg?token=jnuRixQ5JT2Tqqcethpp&branch=master)](https://travis-ci.com/msales/go-clock)
+[![Coverage Status](https://coveralls.io/repos/github/msales/go-clock/badge.svg?branch=master&t=x6DuOO)](https://coveralls.io/github/msales/go-clock?branch=first)
+
 A small package that offers testable time functions.
 
 ## Why?
