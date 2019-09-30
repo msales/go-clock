@@ -14,7 +14,7 @@ go get github.com/msales/go-clock
 ```
 
 ## Usage
-In your code, simply use the `go-clock` functions for time retrieval, instead of the standard `time` package:
+In your code, simply use the `go-clock` functions for time retrieval instead of the standard `time` package:
 
 ```go
 import "github.com/msales/go-clock"

@@ -6,6 +6,7 @@ import (
 	"github.com/benbjohnson/clock"
 )
 
+// init initializes the Clock variable with a real Clock.
 func init() {
 	Restore()
 }
