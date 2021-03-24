@@ -11,6 +11,9 @@ func init() {
 	Restore()
 }
 
+// Day represents full day.
+const Day = 24 * time.Hour
+
 // Clock represents a global clock.
 var Clock clock.Clock
 
