@@ -85,36 +85,87 @@ func TestDayElapsed_FullHours_and_HourPart(t *testing.T) {
 	}
 }
 
-func TestDayElapsed_NewElapsed(t *testing.T) {
+func TestNewDayElapsed(t *testing.T) {
 	tests := []struct {
-		name        string
-		resetTime   time.Duration
-		now         time.Time
-		wantElapsed clock.DayElapsed
+		name          string
+		current       time.Time
+		shift         time.Duration
+		wantElapsed   clock.DayElapsed
+		wantRemaining time.Duration
+		wantFullHours int
+		wantHourPart  float64
 	}{
 		{
-			name:        "midnight",
-			resetTime:   0,
-			now:         time.Date(2020, 12, 30, 12, 0, 0, 0, time.UTC),
-			wantElapsed: clock.DayElapsed(12 * time.Hour),
+			name:          "Reset time on midnight",
+			current:       time.Date(2021, 3, 15, 15, 59, 30, 0, time.UTC),
+			shift:         0, // UTC midnight
+			wantElapsed:   clock.DayElapsed(15*time.Hour + 59*time.Minute + 30*time.Second),
+			wantRemaining: 8*time.Hour + 30*time.Second,
+			wantFullHours: 15,
+			wantHourPart:  0.9916666667,
 		},
 		{
-			name:        "3 AM",
-			resetTime:   3 * time.Hour,
-			now:         time.Date(2020, 12, 30, 12, 0, 0, 0, time.UTC),
-			wantElapsed: clock.DayElapsed(9 * time.Hour),
+			name:          "Reset time on midnight at midnight",
+			current:       time.Date(2021, 3, 15, 0, 0, 0, 0, time.UTC),
+			shift:         0, // UTC midnight
+			wantElapsed:   clock.DayElapsed(0),
+			wantRemaining: clock.Day,
+			wantFullHours: 0,
+			wantHourPart:  0,
 		},
 		{
-			name:        "15 PM",
-			resetTime:   15 * time.Hour,
-			now:         time.Date(2020, 12, 30, 20, 0, 0, 0, time.UTC),
-			wantElapsed: clock.DayElapsed(5 * time.Hour),
+			name:          "Reset time at 13:20, current time at 13:20",
+			current:       time.Date(2021, 3, 15, 13, 20, 0, 0, time.UTC),
+			shift:         13*time.Hour + 20*time.Minute,
+			wantElapsed:   clock.DayElapsed(0),
+			wantRemaining: clock.Day,
+			wantFullHours: 0,
+			wantHourPart:  0,
+		},
+		{
+			name:          "Reset time at 16:00 UTC, current at 15:59:30",
+			current:       time.Date(2021, 3, 15, 15, 59, 30, 0, time.UTC),
+			shift:         16 * time.Hour,
+			wantElapsed:   clock.DayElapsed(23*time.Hour + 59*time.Minute + 30*time.Second),
+			wantRemaining: 30 * time.Second,
+			wantFullHours: 23,
+			wantHourPart:  0.9916666667,
+		},
+		{
+			name:          "Reset time at 15:00 UTC, current at 15:59:30",
+			current:       time.Date(2021, 3, 15, 15, 59, 30, 0, time.UTC),
+			shift:         15 * time.Hour,
+			wantElapsed:   clock.DayElapsed(59*time.Minute + 30*time.Second),
+			wantRemaining: 23*time.Hour + 30*time.Second,
+			wantFullHours: 0,
+			wantHourPart:  0.9916666667,
+		},
+		{
+			name:          "Reset time at 16:00 UTC, current at 15:59:30 UTC+1",
+			current:       time.Date(2021, 3, 15, 15, 59, 30, 0, time.FixedZone("UTC1", 3600)),
+			shift:         16 * time.Hour,
+			wantElapsed:   clock.DayElapsed(22*time.Hour + 59*time.Minute + 30*time.Second),
+			wantRemaining: 1*time.Hour + 30*time.Second,
+			wantFullHours: 22,
+			wantHourPart:  0.9916666667,
+		},
+		{
+			name:          "Reset time at 23:00 UTC, current at 00:00:00 UTC+1",
+			current:       time.Date(2021, 3, 15, 0, 0, 0, 0, time.FixedZone("UTC1", 3600)),
+			shift:         23 * time.Hour,
+			wantElapsed:   clock.DayElapsed(0),
+			wantRemaining: clock.Day,
+			wantFullHours: 0,
+			wantHourPart:  0,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := clock.NewDayElapsed(tt.now, tt.resetTime)
-			assert.Equal(t, tt.wantElapsed, got)
+			elapsed := clock.NewDayElapsed(tt.current, tt.shift)
+			assert.Equal(t, tt.wantElapsed, elapsed)
+			assert.Equal(t, tt.wantRemaining, elapsed.Remaining())
+			assert.Equal(t, tt.wantFullHours, elapsed.FullHours())
+			assert.InDelta(t, tt.wantHourPart, elapsed.HourPart(), 0.0001)
 		})
 	}
 }

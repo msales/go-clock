@@ -9,16 +9,17 @@ import (
 type DayElapsed time.Duration
 
 // NewDayElapsed creates new DayElapsed from passed time.
-func NewDayElapsed(current time.Time, elapsed time.Duration) DayElapsed {
+func NewDayElapsed(current time.Time, shift time.Duration) DayElapsed {
+	current = current.UTC()
 	midnight := current.Truncate(Day)
-	nowWithoutElapsed := current.Add(-elapsed)
+	resetTimeForCurrentDay := midnight.Add(shift)
 
-	sub := nowWithoutElapsed.Sub(midnight)
+	if current.Before(resetTimeForCurrentDay) {
+		resetTimeForCurrentDay = resetTimeForCurrentDay.Add(-Day) // if we are before reset time, it means reset time was yesterday
+	}
+
+	sub := current.Sub(resetTimeForCurrentDay)
 	return DayElapsed(sub)
-}
-
-func (e DayElapsed) hours() float64 {
-	return time.Duration(e).Hours()
 }
 
 // FullHours get full hours of current day
@@ -39,4 +40,8 @@ func (e DayElapsed) Remaining() time.Duration {
 		remaining = 0
 	}
 	return remaining
+}
+
+func (e DayElapsed) hours() float64 {
+	return time.Duration(e).Hours()
 }
