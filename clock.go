@@ -25,42 +25,66 @@ var (
 
 // After waits for the duration to elapse and then sends the current time
 func After(d time.Duration) <-chan time.Time {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	return Clock.After(d)
 }
 
 // AfterFunc waits for the duration to elapse and then calls f in its own goroutine.
 func AfterFunc(d time.Duration, f func()) *clock.Timer {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	return Clock.AfterFunc(d, f)
 }
 
 // Now returns the current local time.
 func Now() time.Time {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	return Clock.Now()
 }
 
 // Since returns the time elapsed since t.
 func Since(t time.Time) time.Duration {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	return Clock.Since(t)
 }
 
 // Sleep pauses the current goroutine for at least the duration d.
 func Sleep(d time.Duration) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	Clock.Sleep(d)
 }
 
 // Tick is a convenience wrapper for NewTicker providing access to the ticking channel only.
 func Tick(d time.Duration) <-chan time.Time {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	return Clock.Tick(d)
 }
 
 // Ticker returns a new Ticker containing a channel that will send the
 // time with a period specified by the duration argument.
 func Ticker(d time.Duration) *clock.Ticker {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	return Clock.Ticker(d)
 }
 
 // Timer creates a new Timer that will send the current time on its channel after at least duration d.
 func Timer(d time.Duration) *clock.Timer {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	return Clock.Timer(d)
 }
 
