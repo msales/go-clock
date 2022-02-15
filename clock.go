@@ -15,10 +15,13 @@ func init() {
 // Day represents full day.
 const Day = 24 * time.Hour
 
-// Clock represents a global clock.
-var Clock clock.Clock
+var (
+	// Clock represents a global clock.
+	Clock clock.Clock
 
-var m sync.Mutex
+	// mutex is used to sync package mocking and restoring.
+	mutex sync.Mutex
+)
 
 // After waits for the duration to elapse and then sends the current time
 func After(d time.Duration) <-chan time.Time {
@@ -63,8 +66,8 @@ func Timer(d time.Duration) *clock.Timer {
 
 // Mock replaces the Clock with a mock frozen at the given time and returns it.
 func Mock(now time.Time) *clock.Mock {
-	m.Lock()
-	defer m.Unlock()
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	mock := clock.NewMock()
 	mock.Set(now)
@@ -76,8 +79,8 @@ func Mock(now time.Time) *clock.Mock {
 
 // Restore replaces the Clock with the real clock.
 func Restore() {
-	m.Lock()
-	defer m.Unlock()
+	mutex.Lock()
+	defer mutex.Unlock()
 
 	Clock = clock.New()
 }
