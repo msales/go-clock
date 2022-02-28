@@ -20,7 +20,7 @@ go get github.com/msales/go-clock
 In your code, simply use the `go-clock` functions for time retrieval instead of the standard `time` package:
 
 ```go
-import "github.com/msales/go-clock"
+import "github.com/msales/goclock/v2"
 
 now := clock.Now() // Instead of `time.Now()`
 since := clock.Since(now) // Instead of `time.Since()`

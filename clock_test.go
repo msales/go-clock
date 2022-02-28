@@ -1,4 +1,4 @@
-package clock_test
+package goclock_test
 
 import (
 	"testing"
@@ -8,29 +8,29 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
-	"github.com/msales/go-clock"
+	goclock "github.com/msales/go-clock/v2"
 )
 
 func TestMock(t *testing.T) {
 	now := time.Date(2019, time.September, 30, 14, 30, 00, 00, time.UTC)
 
-	mock := clock.Mock(now)
+	mock := goclock.Mock(now)
 
 	time.Sleep(time.Nanosecond) // We just want to be sure that ANY time has passed.
-	assert.Equal(t, now, clock.Now())
+	assert.Equal(t, now, goclock.Now())
 
 	mock.Add(time.Second)
-	assert.Equal(t, now.Add(time.Second), clock.Now())
+	assert.Equal(t, now.Add(time.Second), goclock.Now())
 }
 
 func TestRestore(t *testing.T) {
 	now := time.Date(2019, time.September, 30, 14, 30, 00, 00, time.UTC)
 
-	clock.Mock(now)
-	clock.Restore()
+	goclock.Mock(now)
+	goclock.Restore()
 
 	time.Sleep(time.Nanosecond) // We just want to be sure that ANY time has passed.
-	assert.NotEqual(t, now, clock.Now())
+	assert.NotEqual(t, now, goclock.Now())
 }
 
 func TestAfter(t *testing.T) {
@@ -39,9 +39,9 @@ func TestAfter(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("After", d).Return(ch)
-	clock.Clock = clk
+	goclock.Clock = clk
 
-	got := clock.After(d)
+	got := goclock.After(d)
 
 	clk.AssertExpectations(t)
 	assert.Equal(t, ch, got)
@@ -54,9 +54,9 @@ func TestAfterFunc(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("AfterFunc", d, mock.AnythingOfType("func()")).Return(timer)
-	clock.Clock = clk
+	goclock.Clock = clk
 
-	got := clock.AfterFunc(d, f)
+	got := goclock.AfterFunc(d, f)
 
 	clk.AssertExpectations(t)
 	assert.Equal(t, timer, got)
@@ -67,9 +67,9 @@ func TestNow(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("Now").Return(now)
-	clock.Clock = clk
+	goclock.Clock = clk
 
-	got := clock.Now()
+	got := goclock.Now()
 
 	clk.AssertExpectations(t)
 	assert.Equal(t, now, got)
@@ -81,9 +81,9 @@ func TestSince(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("Since", now).Return(d)
-	clock.Clock = clk
+	goclock.Clock = clk
 
-	got := clock.Since(now)
+	got := goclock.Since(now)
 
 	clk.AssertExpectations(t)
 	assert.Equal(t, d, got)
@@ -94,9 +94,9 @@ func TestSleep(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("Sleep", d)
-	clock.Clock = clk
+	goclock.Clock = clk
 
-	clock.Sleep(d)
+	goclock.Sleep(d)
 
 	clk.AssertExpectations(t)
 }
@@ -107,9 +107,9 @@ func TestTick(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("Tick", d).Return(ch)
-	clock.Clock = clk
+	goclock.Clock = clk
 
-	got := clock.Tick(d)
+	got := goclock.Tick(d)
 
 	clk.AssertExpectations(t)
 	assert.Equal(t, ch, got)
@@ -121,9 +121,9 @@ func TestTicker(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("Ticker", d).Return(ticker)
-	clock.Clock = clk
+	goclock.Clock = clk
 
-	got := clock.Ticker(d)
+	got := goclock.Ticker(d)
 
 	clk.AssertExpectations(t)
 	assert.Equal(t, ticker, got)
@@ -135,9 +135,9 @@ func TestTimer(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("Timer", d).Return(timer)
-	clock.Clock = clk
+	goclock.Clock = clk
 
-	got := clock.Timer(d)
+	got := goclock.Timer(d)
 
 	clk.AssertExpectations(t)
 	assert.Equal(t, timer, got)

@@ -1,21 +1,21 @@
-package clock_test
+package goclock_test
 
 import (
 	"testing"
 	"time"
 
-	"github.com/msales/go-clock"
+	goclock "github.com/msales/go-clock/v2"
 )
 
 func TestRace_After(t *testing.T) {
 	testMockInRace(func() {
-		clock.After(1 * time.Second)
+		goclock.After(1 * time.Second)
 	})
 }
 
 func TestRace_AfterFunc(t *testing.T) {
 	testMockInRace(func() {
-		clock.AfterFunc(1*time.Second, func() {
+		goclock.AfterFunc(1*time.Second, func() {
 
 		})
 	})
@@ -23,37 +23,37 @@ func TestRace_AfterFunc(t *testing.T) {
 
 func TestRace_Now(t *testing.T) {
 	testMockInRace(func() {
-		clock.Now()
+		goclock.Now()
 	})
 }
 
 func TestRace_Since(t *testing.T) {
 	testMockInRace(func() {
-		clock.Since(time.Now())
+		goclock.Since(time.Now())
 	})
 }
 
 func TestRace_Sleep(t *testing.T) {
 	testInRace(func() {
-		clock.Sleep(1 * time.Nanosecond)
+		goclock.Sleep(1 * time.Nanosecond)
 	})
 }
 
 func TestRace_Tick(t *testing.T) {
 	testMockInRace(func() {
-		clock.Tick(1 * time.Nanosecond)
+		goclock.Tick(1 * time.Nanosecond)
 	})
 }
 
 func TestRace_Timer(t *testing.T) {
 	testMockInRace(func() {
-		clock.Timer(1 * time.Nanosecond)
+		goclock.Timer(1 * time.Nanosecond)
 	})
 }
 
 func TestRace_Mock(t *testing.T) {
 	testMockInRace(func() {
-		clock.Mock(time.Now())
+		goclock.Mock(time.Now())
 	})
 }
 
@@ -63,7 +63,7 @@ func testMockInRace(runFunc func()) {
 	wait1 := make(chan struct{}, 1)
 	wait2 := make(chan struct{}, 1)
 
-	clock.Mock(now)
+	goclock.Mock(now)
 	go func() {
 		runFunc()
 		wait1 <- struct{}{}
@@ -76,7 +76,7 @@ func testMockInRace(runFunc func()) {
 		<-wait1
 	}()
 
-	clock.Restore()
+	goclock.Restore()
 }
 
 func testInRace(runFunc func()) {

@@ -1,4 +1,4 @@
-module github.com/msales/go-clock
+module github.com/msales/go-clock/v2
 
 go 1.13
 
