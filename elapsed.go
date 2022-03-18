@@ -1,4 +1,4 @@
-package clock
+package goclock
 
 import (
 	"math"
