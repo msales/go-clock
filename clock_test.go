@@ -1,6 +1,7 @@
 package goclock_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -39,7 +40,7 @@ func TestAfter(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("After", d).Return(ch)
-	goclock.Clock = clk
+	goclock.Set(clk)
 
 	got := goclock.After(d)
 
@@ -54,7 +55,7 @@ func TestAfterFunc(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("AfterFunc", d, mock.AnythingOfType("func()")).Return(timer)
-	goclock.Clock = clk
+	goclock.Set(clk)
 
 	got := goclock.AfterFunc(d, f)
 
@@ -67,7 +68,7 @@ func TestNow(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("Now").Return(now)
-	goclock.Clock = clk
+	goclock.Set(clk)
 
 	got := goclock.Now()
 
@@ -81,7 +82,7 @@ func TestSince(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("Since", now).Return(d)
-	goclock.Clock = clk
+	goclock.Set(clk)
 
 	got := goclock.Since(now)
 
@@ -94,7 +95,7 @@ func TestSleep(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("Sleep", d)
-	goclock.Clock = clk
+	goclock.Set(clk)
 
 	goclock.Sleep(d)
 
@@ -107,7 +108,7 @@ func TestTick(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("Tick", d).Return(ch)
-	goclock.Clock = clk
+	goclock.Set(clk)
 
 	got := goclock.Tick(d)
 
@@ -121,7 +122,7 @@ func TestTicker(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("Ticker", d).Return(ticker)
-	goclock.Clock = clk
+	goclock.Set(clk)
 
 	got := goclock.Ticker(d)
 
@@ -135,7 +136,7 @@ func TestTimer(t *testing.T) {
 
 	clk := new(mockClock)
 	clk.On("Timer", d).Return(timer)
-	goclock.Clock = clk
+	goclock.Set(clk)
 
 	got := goclock.Timer(d)
 
@@ -143,8 +144,64 @@ func TestTimer(t *testing.T) {
 	assert.Equal(t, timer, got)
 }
 
+func TestUntil(t *testing.T) {
+	now := time.Date(2019, time.September, 30, 14, 30, 00, 00, time.UTC)
+	dur := 5 * time.Second
+
+	clk := new(mockClock)
+	clk.On("Until", now).Return(dur)
+	goclock.Set(clk)
+
+	got := goclock.Until(now)
+
+	clk.AssertExpectations(t)
+	assert.Equal(t, dur, got)
+}
+
+func TestWithDeadline(t *testing.T) {
+	ctx := context.Background()
+	now := time.Now().Add(5 * time.Second)
+
+	clk := new(mockClock)
+	clk.On("WithDeadline", ctx, now).Return(ctx, context.CancelFunc(func() {}))
+	goclock.Set(clk)
+
+	gotCtx, cancelFn := goclock.WithDeadline(ctx, now)
+
+	clk.AssertExpectations(t)
+	assert.Equal(t, ctx, gotCtx)
+	assert.IsType(t, context.CancelFunc(func() {}), cancelFn)
+}
+
+func TestWithTimeout(t *testing.T) {
+	ctx := context.Background()
+	timeout := 5 * time.Second
+
+	clk := new(mockClock)
+	clk.On("WithTimeout", ctx, timeout).Return(ctx, context.CancelFunc(func() {}))
+	goclock.Set(clk)
+
+	gotCtx, cancelFn := goclock.WithTimeout(ctx, timeout)
+
+	clk.AssertExpectations(t)
+	assert.Equal(t, ctx, gotCtx)
+	assert.IsType(t, context.CancelFunc(func() {}), cancelFn)
+}
+
 type mockClock struct {
 	mock.Mock
+}
+
+func (m *mockClock) Until(t time.Time) time.Duration {
+	return m.Called(t).Get(0).(time.Duration)
+}
+
+func (m *mockClock) WithDeadline(parent context.Context, d time.Time) (context.Context, context.CancelFunc) {
+	return m.Called(parent, d).Get(0).(context.Context), m.Called(parent, d).Get(1).(context.CancelFunc)
+}
+
+func (m *mockClock) WithTimeout(parent context.Context, t time.Duration) (context.Context, context.CancelFunc) {
+	return m.Called(parent, t).Get(0).(context.Context), m.Called(parent, t).Get(1).(context.CancelFunc)
 }
 
 func (m *mockClock) After(d time.Duration) <-chan time.Time {
