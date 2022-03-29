@@ -6,7 +6,7 @@ import (
 	goclock "github.com/msales/go-clock/v2"
 )
 
-func BenchmarkNopLogger_Info_Lock(b *testing.B) {
+func BenchmarkClock_Now_Lock(b *testing.B) {
 	goclock.UseLock()
 
 	b.SetParallelism(100)
@@ -17,7 +17,7 @@ func BenchmarkNopLogger_Info_Lock(b *testing.B) {
 	})
 }
 
-func BenchmarkNopLogger_Info_NoLock(b *testing.B) {
+func BenchmarkClock_Now_NoLock(b *testing.B) {
 	goclock.NoLock()
 
 	b.SetParallelism(100)
