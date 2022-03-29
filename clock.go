@@ -21,13 +21,16 @@ var (
 )
 
 func newClk(clk clock.Clock) *localClock {
-	return &localClock{
+	lClk := &localClock{
 		clock: clk,
 	}
+	lClk.mutex.Disable()
+	return lClk
 }
 
 type localClock struct {
-	mutex sync.Mutex
+	// Used to sync overriding clock. Locking is disabled by Default
+	mutex mutexWrap
 	clock clock.Clock
 }
 
@@ -129,6 +132,14 @@ func (l *localClock) restore() {
 	l.clock = clock.New()
 }
 
+func (l *localClock) setLock() {
+	l.mutex.Enable()
+}
+
+func (l *localClock) setNoLock() {
+	l.mutex.Disable()
+}
+
 // After waits for the duration to elapse and then sends the current time
 func After(d time.Duration) <-chan time.Time {
 	return def.After(d)
@@ -205,4 +216,45 @@ func Set(clk clock.Clock) {
 // Restore replaces the Clock with the real clock.
 func Restore() {
 	def.restore()
+}
+
+// UseLock adds locking mechanism back on clock.
+func UseLock() {
+	def.setLock()
+}
+
+// NoLock removes locking mechanism usage on clock.
+func NoLock() {
+	def.setNoLock()
+}
+
+type mutexWrap struct {
+	lock     sync.Mutex
+	disabled bool
+}
+
+func (mw *mutexWrap) Lock() {
+	if !mw.disabled {
+		mw.lock.Lock()
+	}
+}
+
+func (mw *mutexWrap) Unlock() {
+	if !mw.disabled {
+		mw.lock.Unlock()
+	}
+}
+
+func (mw *mutexWrap) Enable() {
+	mw.lock.Lock()
+	defer mw.lock.Unlock()
+
+	mw.disabled = false
+}
+
+func (mw *mutexWrap) Disable() {
+	mw.lock.Lock()
+	defer mw.lock.Unlock()
+
+	mw.disabled = true
 }
