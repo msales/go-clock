@@ -1,6 +1,7 @@
 package goclock_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -51,13 +52,28 @@ func TestRace_Timer(t *testing.T) {
 	})
 }
 
-func TestRace_Mock(t *testing.T) {
+func TestRace_Until(t *testing.T) {
 	testMockInRace(func() {
-		goclock.Mock(time.Now())
+		now := time.Now().Add(5 * time.Second)
+		goclock.Until(now)
+	})
+}
+
+func TestRace_WithDeadline(t *testing.T) {
+	testMockInRace(func() {
+		now := time.Now().Add(5 * time.Second)
+		goclock.WithDeadline(context.Background(), now)
+	})
+}
+
+func TestRace_WithTimeout(t *testing.T) {
+	testMockInRace(func() {
+		goclock.WithTimeout(context.Background(), 5*time.Second)
 	})
 }
 
 func testMockInRace(runFunc func()) {
+	goclock.UseLock()
 	now := time.Date(2019, time.September, 30, 14, 30, 00, 00, time.UTC)
 
 	wait1 := make(chan struct{}, 1)
@@ -80,6 +96,8 @@ func testMockInRace(runFunc func()) {
 }
 
 func testInRace(runFunc func()) {
+	goclock.UseLock()
+	goclock.Restore()
 	wait1 := make(chan struct{}, 1)
 	wait2 := make(chan struct{}, 1)
 
