@@ -3,6 +3,7 @@ package goclock
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -24,6 +25,9 @@ func newClk(clk clock.Clock) *localClock {
 	lClk := &localClock{
 		clock: clk,
 	}
+
+	disabled := int32(0)
+	lClk.mutex.disabled = &disabled
 	lClk.mutex.Disable()
 	return lClk
 }
@@ -230,17 +234,17 @@ func NoLock() {
 
 type mutexWrap struct {
 	lock     sync.Mutex
-	disabled bool
+	disabled *int32
 }
 
 func (mw *mutexWrap) Lock() {
-	if !mw.disabled {
+	if !mw.isDisabled() {
 		mw.lock.Lock()
 	}
 }
 
 func (mw *mutexWrap) Unlock() {
-	if !mw.disabled {
+	if !mw.isDisabled() {
 		mw.lock.Unlock()
 	}
 }
@@ -249,12 +253,16 @@ func (mw *mutexWrap) Enable() {
 	mw.lock.Lock()
 	defer mw.lock.Unlock()
 
-	mw.disabled = false
+	atomic.StoreInt32(mw.disabled, 0)
 }
 
 func (mw *mutexWrap) Disable() {
 	mw.lock.Lock()
 	defer mw.lock.Unlock()
 
-	mw.disabled = true
+	atomic.StoreInt32(mw.disabled, 1)
+}
+
+func (mw *mutexWrap) isDisabled() bool {
+	return atomic.LoadInt32(mw.disabled) == 1
 }
