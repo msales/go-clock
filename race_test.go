@@ -73,7 +73,6 @@ func TestRace_WithTimeout(t *testing.T) {
 }
 
 func testMockInRace(runFunc func()) {
-	goclock.UseLock()
 	now := time.Date(2019, time.September, 30, 14, 30, 00, 00, time.UTC)
 
 	wait1 := make(chan struct{}, 1)
@@ -96,7 +95,6 @@ func testMockInRace(runFunc func()) {
 }
 
 func testInRace(runFunc func()) {
-	goclock.UseLock()
 	goclock.Restore()
 	wait1 := make(chan struct{}, 1)
 	wait2 := make(chan struct{}, 1)
