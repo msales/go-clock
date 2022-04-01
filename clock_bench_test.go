@@ -19,6 +19,7 @@ func BenchmarkClock_Now_Lock(b *testing.B) {
 
 func BenchmarkClock_Now_NoLock(b *testing.B) {
 	goclock.NoLock()
+	b.Cleanup(goclock.UseLock)
 
 	b.SetParallelism(100)
 	b.RunParallel(func(pb *testing.PB) {
