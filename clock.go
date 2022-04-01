@@ -26,9 +26,9 @@ func newClk(clk clock.Clock) *localClock {
 		clock: clk,
 	}
 
-	disabled := int32(0)
+	// disable mutex by default
+	disabled := int32(1)
 	lClk.mutex.disabled = &disabled
-	lClk.mutex.Disable()
 	return lClk
 }
 
