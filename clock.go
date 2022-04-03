@@ -27,8 +27,7 @@ func newClk(clk clock.Clock) *localClock {
 	}
 
 	// disable mutex by default
-	disabled := int32(1)
-	lClk.mutex.disabled = &disabled
+	lClk.mutex.Disable()
 	return lClk
 }
 
@@ -234,7 +233,7 @@ func NoLock() {
 
 type mutexWrap struct {
 	lock     sync.Mutex
-	disabled *int32
+	disabled int32
 }
 
 func (mw *mutexWrap) Lock() {
@@ -253,16 +252,16 @@ func (mw *mutexWrap) Enable() {
 	mw.lock.Lock()
 	defer mw.lock.Unlock()
 
-	atomic.StoreInt32(mw.disabled, 0)
+	atomic.StoreInt32(&mw.disabled, 0)
 }
 
 func (mw *mutexWrap) Disable() {
 	mw.lock.Lock()
 	defer mw.lock.Unlock()
 
-	atomic.StoreInt32(mw.disabled, 1)
+	atomic.StoreInt32(&mw.disabled, 1)
 }
 
 func (mw *mutexWrap) isDisabled() bool {
-	return atomic.LoadInt32(mw.disabled) == 1
+	return mw.disabled == 1
 }
