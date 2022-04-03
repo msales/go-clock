@@ -249,16 +249,10 @@ func (mw *mutexWrap) Unlock() {
 }
 
 func (mw *mutexWrap) Enable() {
-	mw.lock.Lock()
-	defer mw.lock.Unlock()
-
 	atomic.StoreInt32(&mw.disabled, 0)
 }
 
 func (mw *mutexWrap) Disable() {
-	mw.lock.Lock()
-	defer mw.lock.Unlock()
-
 	atomic.StoreInt32(&mw.disabled, 1)
 }
 
