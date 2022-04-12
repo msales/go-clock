@@ -3,7 +3,6 @@ package goclock
 import (
 	"context"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/benbjohnson/clock"
@@ -26,13 +25,11 @@ func newClk(clk clock.Clock) *localClock {
 		clock: clk,
 	}
 
-	// disable mutex by default
-	lClk.mutex.Disable()
 	return lClk
 }
 
 type localClock struct {
-	// Used to sync overriding clock. Locking is disabled by Default
+	// Used to sync overriding clock. Locking is enabled by Default
 	mutex mutexWrap
 	clock clock.Clock
 }
@@ -135,10 +132,6 @@ func (l *localClock) restore() {
 	l.clock = clock.New()
 }
 
-func (l *localClock) setLock() {
-	l.mutex.Enable()
-}
-
 func (l *localClock) setNoLock() {
 	l.mutex.Disable()
 }
@@ -221,11 +214,6 @@ func Restore() {
 	def.restore()
 }
 
-// UseLock adds locking mechanism back on clock.
-func UseLock() {
-	def.setLock()
-}
-
 // NoLock removes locking mechanism usage on clock.
 func NoLock() {
 	def.setNoLock()
@@ -233,35 +221,21 @@ func NoLock() {
 
 type mutexWrap struct {
 	lock     sync.Mutex
-	disabled int32
+	disabled bool
 }
 
 func (mw *mutexWrap) Lock() {
-	if !mw.isDisabled() {
+	if !mw.disabled {
 		mw.lock.Lock()
 	}
 }
 
 func (mw *mutexWrap) Unlock() {
-	if !mw.isDisabled() {
+	if !mw.disabled {
 		mw.lock.Unlock()
 	}
 }
 
-func (mw *mutexWrap) Enable() {
-	mw.lock.Lock()
-	defer mw.lock.Unlock()
-
-	atomic.StoreInt32(&mw.disabled, 0)
-}
-
 func (mw *mutexWrap) Disable() {
-	mw.lock.Lock()
-	defer mw.lock.Unlock()
-
-	atomic.StoreInt32(&mw.disabled, 1)
-}
-
-func (mw *mutexWrap) isDisabled() bool {
-	return mw.disabled == 1
+	mw.disabled = true
 }
